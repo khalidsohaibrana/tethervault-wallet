@@ -1,45 +1,50 @@
 import React, { useState } from 'react';
 import { View } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { Screen, ScreenHeader, Text, TextField, Button } from '@/components';
+import { Screen, ScreenHeader, Text, Button, PinKeypad, Toggle, Card } from '@/components';
 import { useWalletActions } from '@/wdk/hooks/useWalletActions';
 import { setAppPassword } from '@/wdk/passwordVault';
 import { usePasswordSession } from '@/state/passwordSession';
-
-const MIN_PASSWORD_LENGTH = 8;
+import { useSecuritySession } from '@/state/securitySession';
+import { getBiometricStatus, setBiometricEnabled } from '@/security/appAccess';
 
 /**
- * Password step + wallet commit + app password vault setup.
+ * PIN step + wallet commit + app access setup.
  *
- * In BOTH create and import modes, this screen now establishes the app-level
- * password gate: it encrypts a fixed verifier with the chosen password (via
- * wdk-utils, see passwordVault.ts) and stores it in secure storage. From then
- * on, unlock.tsx requires this password before it will call WDK's unlock() —
- * biometrics/WDK's own secure storage alone are no longer sufficient.
- *
- * The password is also kept in memory for this session (passwordSession) so
- * the very next screen (cloud-backup) can encrypt the backup payload with it
- * without asking a second time. It is never written to disk in plaintext.
+ * WDK owns wallet key storage. TetherVault adds a local 6-digit PIN gate and
+ * optional biometric convenience unlock before calling WDK unlock/reveal/send.
  */
 export default function Password() {
   const router = useRouter();
   const { mode = 'create', mnemonic = '' } = useLocalSearchParams<{ mode?: 'create' | 'import'; mnemonic?: string }>();
   const { importWallet } = useWalletActions();
   const setSessionPassword = usePasswordSession((s) => s.setPassword);
-  const [password, setPassword] = useState('');
+  const setSessionPin = useSecuritySession((s) => s.setPin);
+  const [pin, setPin] = useState('');
   const [confirm, setConfirm] = useState('');
+  const [biometricLabel, setBiometricLabel] = useState('Biometrics');
+  const [biometricAvailable, setBiometricAvailable] = useState(false);
+  const [enableBiometric, setEnableBiometric] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const step = mode === 'create' ? 'Step 3 of 4' : 'Step 2 of 3';
 
+  React.useEffect(() => {
+    getBiometricStatus().then((status) => {
+      setBiometricLabel(status.label);
+      setBiometricAvailable(status.available && status.enrolled);
+      setEnableBiometric(status.available && status.enrolled);
+    });
+  }, []);
+
   const onContinue = async () => {
     setError(null);
-    if (password.length < MIN_PASSWORD_LENGTH) {
-      setError(`Password must be at least ${MIN_PASSWORD_LENGTH} characters`);
+    if (pin.length !== 6) {
+      setError('Enter a 6-digit PIN');
       return;
     }
-    if (password !== confirm) {
-      setError('Passwords do not match');
+    if (pin !== confirm) {
+      setError('PINs do not match');
       return;
     }
     setBusy(true);
@@ -48,9 +53,12 @@ export default function Password() {
         // Commit the previewed phrase now (persist + unlock via WDK).
         await importWallet(mnemonic);
       }
-      // Establish the app password gate (both create and import flows).
-      await setAppPassword(password);
-      setSessionPassword(password);
+      // Establish local access control. setAppPassword remains the storage
+      // compatibility layer for cloud backup, but the credential is now a PIN.
+      await setAppPassword(pin);
+      await setBiometricEnabled(enableBiometric && biometricAvailable);
+      setSessionPassword(pin);
+      setSessionPin(pin);
       router.push('/(onboarding)/cloud-backup');
     } catch (e: any) {
       setError(e?.message ?? 'Could not create wallet');
@@ -62,26 +70,31 @@ export default function Password() {
   return (
     <Screen scroll>
       <ScreenHeader backStyle="plain" step={step} onBack={() => router.back()} />
-      <Text variant="h1">Create a password</Text>
+      <Text variant="h1">Create your PIN</Text>
       <Text variant="body" color="textSecondary">
-        This password secures your wallet on this device. You'll need it to unlock the app going forward.
+        Use a 6-digit PIN to unlock TetherVault and approve sensitive wallet actions.
       </Text>
 
-      <TextField
-        label="Password"
-        placeholder="Enter password"
-        secureTextEntry
-        textContentType="newPassword"
-        value={password}
-        onChangeText={setPassword}
-      />
-      <TextField
-        label="Confirm password"
-        placeholder="Re-enter password"
-        secureTextEntry
-        value={confirm}
-        onChangeText={setConfirm}
-      />
+      <Text variant="label" style={{ marginTop: 20 }}>PIN</Text>
+      <PinKeypad value={pin} onChange={setPin} />
+
+      <Text variant="label" style={{ marginTop: 22 }}>Confirm PIN</Text>
+      <PinKeypad value={confirm} onChange={setConfirm} />
+
+      <Card style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 18 }}>
+        <View style={{ flex: 1 }}>
+          <Text variant="tokenName">Unlock with {biometricLabel}</Text>
+          <Text variant="small" color="textSecondary">
+            {biometricAvailable
+              ? `${biometricLabel} is a convenience unlock. Your PIN remains the fallback.`
+              : 'Biometric unlock is unavailable or not enrolled on this simulator/device.'}
+          </Text>
+        </View>
+        <Toggle
+          value={enableBiometric && biometricAvailable}
+          onValueChange={setEnableBiometric}
+        />
+      </Card>
 
       {error ? <Text variant="small" color="error" style={{ marginTop: 8 }}>{error}</Text> : null}
 
@@ -90,12 +103,7 @@ export default function Password() {
           label="Continue"
           onPress={onContinue}
           loading={busy}
-          // Real bug fixed: was `!password || !confirm`, which fully
-          // disabled the button (never even calling onContinue) until
-          // BOTH fields had any text at all — meaning a too-short
-          // password with an empty Confirm field showed no error
-          // whatsoever, since the length check never got a chance to run.
-          disabled={!password}
+          disabled={!pin}
         />
       </View>
     </Screen>

@@ -47,27 +47,27 @@ export interface Palette {
 }
 
 export const lightPalette: Palette = {
-  brand: '#FF4E00',
-  brandPressed: '#CC3E00',
-  brandTint: 'rgba(255,78,0,0.16)',
-  brandTintPressed: 'rgba(204,62,0,0.16)',
+  brand: '#26A17B',
+  brandPressed: '#1E8062',
+  brandTint: 'rgba(38,161,123,0.14)',
+  brandTintPressed: 'rgba(30,128,98,0.16)',
 
-  textPrimary: '#171717',
-  textSecondary: 'rgba(23,23,23,0.6)',
-  textDisabled: 'rgba(23,23,23,0.3)',
+  textPrimary: '#101414',
+  textSecondary: 'rgba(16,20,20,0.62)',
+  textDisabled: 'rgba(16,20,20,0.32)',
 
   bgPrimary: '#FFFFFF',
-  bgSecondary: '#FAF7F5',
+  bgSecondary: '#F5FAF8',
   bgTertiary: 'rgba(255,255,255,0.75)',
 
-  border: '#EBE4E1',
-  borderStrong: '#D9D9D9',
+  border: '#DDEAE5',
+  borderStrong: '#BFD7CD',
   pressed: 'rgba(0,0,0,0.08)',
   disabledBg: 'rgba(0,0,0,0.06)',
 
   success: '#27AE60',
   successTint: 'rgba(39,174,96,0.12)',
-  error: '#EB5757',
+  error: '#E5484D',
 
   usdt: '#26A17B',
   ethereum: '#627EEA',
@@ -79,10 +79,10 @@ export const lightPalette: Palette = {
 };
 
 export const darkPalette: Palette = {
-  brand: '#FF5A0F',
-  brandPressed: '#E24E00',
-  brandTint: 'rgba(255,90,15,0.18)',
-  brandTintPressed: 'rgba(226,78,0,0.18)',
+  brand: '#26D09D',
+  brandPressed: '#20A87F',
+  brandTint: 'rgba(38,208,157,0.18)',
+  brandTintPressed: 'rgba(32,168,127,0.18)',
 
   textPrimary: '#F5F5F5',
   textSecondary: 'rgba(245,245,245,0.6)',

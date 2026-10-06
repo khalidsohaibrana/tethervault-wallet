@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { View, Pressable } from 'react-native';
+import { Share, View, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
 import QRCode from 'react-native-qrcode-svg';
-import { ChevronDown, Check, Copy, TriangleAlert } from 'lucide-react-native';
+import { ChevronDown, Check, Copy, Share2, TriangleAlert } from 'lucide-react-native';
 import { Screen, ScreenHeader, Text, Card, AssetIcon } from '@/components';
 import { useTheme } from '@/theme';
 import { useResponsive } from '@/theme/responsive';
@@ -69,6 +69,13 @@ export default function Receive() {
     await Clipboard.setStringAsync(address);
     setCopied(true);
     setTimeout(() => setCopied(false), 1800);
+  };
+
+  const onShare = async () => {
+    if (!address) return;
+    await Share.share({
+      message: `TetherVault ${selected.getSymbol()} address on ${networkDisplayName(selected.getNetwork())}: ${address}`,
+    });
   };
 
   return (
@@ -172,6 +179,9 @@ export default function Receive() {
         <View style={{ flexDirection: 'row', gap: 6 }}>
           <ChipButton onPress={onCopy}>
             {copied ? <Check size={moderateScale(16)} color={theme.colors.brand} /> : <Copy size={moderateScale(16)} color={theme.colors.brand} />}
+          </ChipButton>
+          <ChipButton onPress={onShare}>
+            <Share2 size={moderateScale(16)} color={theme.colors.brand} />
           </ChipButton>
         </View>
       </Card>

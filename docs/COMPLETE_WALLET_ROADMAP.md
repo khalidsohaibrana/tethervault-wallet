@@ -8,7 +8,7 @@ complete wallet solution.
 Goal: prove the core self-custodial wallet experience.
 
 - Create/import wallet.
-- Password-based lock and unlock.
+- PIN-based lock and unlock with optional native biometrics.
 - Ethereum Sepolia USDt balance.
 - Receive with QR and copy/share.
 - Send USDt with review and result screens.
@@ -21,8 +21,8 @@ Goal: harden the app for real users.
 
 - Replace demo identifiers with production bundle IDs and store metadata.
 - Complete threat model and wallet data-flow documentation.
-- Add biometric gate before sensitive wallet actions.
-- Add stricter seed phrase reveal/import controls.
+- Add biometric/PIN freshness policies for sensitive wallet actions.
+- Add stricter seed phrase reveal/import controls and recovery phrase verification.
 - Add analytics that never records addresses, seeds, private keys, or sensitive
   transaction payloads.
 - Add crash reporting with wallet-data redaction.

@@ -28,7 +28,7 @@ Goal: make the inherited WDK starter feel like TetherVault.
 
 Goal: one polished USDt wallet path.
 
-- Onboarding: create wallet, import wallet, password setup.
+- Onboarding: create wallet, import wallet, 6-digit PIN setup, optional biometrics.
 - Wallet home: active account, total balance, USDt-first token list.
 - Receive: Sepolia USDt address, QR, copy, share.
 - Send: token select, address validation, amount entry, review, result.
@@ -39,10 +39,12 @@ Goal: one polished USDt wallet path.
 Goal: make self-custody constraints obvious without scaring users.
 
 - Seed reveal/import warnings.
-- Password rules and error states.
+- PIN rules and error states.
+- Face ID/Touch ID unlock where the native OS supports it.
+- Fresh PIN/biometric re-auth before seed reveal and transaction confirmation.
 - Lock/unlock copy.
 - No logging of secrets.
-- Clear note that lost seed/password cannot be recovered by the app.
+- Clear note that lost seed/PIN cannot be recovered by the app.
 
 ## Milestone 4: Demo Reliability
 

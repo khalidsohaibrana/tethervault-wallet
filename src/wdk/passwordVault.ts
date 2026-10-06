@@ -1,6 +1,7 @@
 import * as SecureStore from 'expo-secure-store';
 import * as Crypto from 'expo-crypto';
 import { encrypt, decrypt, type EncryptedPayload } from '@tetherto/wdk-utils';
+import { clearAppAccess, setAppPin, verifyAppPin } from '@/security/appAccess';
 
 /**
  * App password vault — envelope encryption (see the earlier version's notes
@@ -50,6 +51,7 @@ async function getOrCreateVaultKey(): Promise<string> {
 
 /** Sets (or replaces) the app password. Called at wallet creation/import. */
 export async function setAppPassword(password: string): Promise<void> {
+  await setAppPin(password);
   const vaultKey = await getOrCreateVaultKey();
   const payload = encrypt(password, vaultKey, VAULT_WRAP_SCRYPT_PARAMS);
   await SecureStore.setItemAsync(PASSWORD_PAYLOAD_STORE_KEY, JSON.stringify(payload));
@@ -79,8 +81,7 @@ export async function getAppPassword(): Promise<string | null> {
 
 /** Verifies a password attempt by recovering the real password and comparing. */
 export async function verifyAppPassword(password: string): Promise<boolean> {
-  const real = await getAppPassword();
-  return real !== null && real === password;
+  return verifyAppPin(password);
 }
 
 /** Whether an app password has been set yet. */
@@ -92,4 +93,5 @@ export async function hasAppPassword(): Promise<boolean> {
 export async function clearAppPassword(): Promise<void> {
   await SecureStore.deleteItemAsync(PASSWORD_PAYLOAD_STORE_KEY);
   await SecureStore.deleteItemAsync(VAULT_KEY_STORE_KEY);
+  await clearAppAccess();
 }

@@ -14,3 +14,4 @@ export { SeedWordInputGrid } from './SeedWordInputGrid';
 export { Toast } from './Toast';
 export { AssetIcon } from './AssetIcon';
 export { BrandMark } from './BrandMark';
+export { PinKeypad } from './PinKeypad';

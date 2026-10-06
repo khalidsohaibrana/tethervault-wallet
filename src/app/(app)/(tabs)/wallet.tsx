@@ -78,6 +78,11 @@ export default function WalletHome() {
   // Matches the prototype's actual behavior exactly: a bottom toast that
   // auto-hides, not a native Alert dialog.
   const comingSoon = (feature: string) => useToast.getState().show(`${feature} coming soon`);
+  const tokenRows = [...balances.data].sort((a, b) => {
+    const aIsUsdT = a.token.symbol.startsWith('USDT') ? 0 : 1;
+    const bIsUsdT = b.token.symbol.startsWith('USDT') ? 0 : 1;
+    return aIsUsdT - bIsUsdT || a.token.symbol.localeCompare(b.token.symbol);
+  });
 
   return (
     <Screen noPadding edges={['top']}>
@@ -153,7 +158,7 @@ export default function WalletHome() {
         {/* Tokens */}
         <Text variant="label" style={{ marginBottom: 4, fontWeight:'bold', marginTop:10 }}>Tokens</Text>
         <View>
-          {balances.data.map((b, i) => (
+          {tokenRows.map((b, i) => (
             <TokenRow
               key={b.token.id}
               symbol={b.token.symbol}
@@ -161,7 +166,7 @@ export default function WalletHome() {
               amount={b.amount}
               fiatValue={b.fiatValue}
               network={b.token.chain}
-              isLast={i === balances.data.length - 1}
+              isLast={i === tokenRows.length - 1}
               fetchFailed={b.fetchFailed}
               onRetryRow={() => balances.refetch()}
             />

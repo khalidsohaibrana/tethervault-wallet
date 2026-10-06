@@ -3,7 +3,7 @@ import { View } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import BigNumber from 'bignumber.js';
 import { useAccount } from '@tetherto/wdk-react-native-core';
-import { Screen, ScreenHeader, Text, Card, Button, AssetIcon, LoadingState } from '@/components';
+import { Screen, ScreenHeader, Text, Card, Button, AssetIcon, PinKeypad } from '@/components';
 import { useTheme } from '@/theme';
 import { useResponsive } from '@/theme/responsive';
 import { useAccounts } from '@/state/accounts';
@@ -13,6 +13,7 @@ import { sendAsset, quoteSendFee } from '@/wdk/useSend';
 import { useWdkBalances } from '@/wdk/hooks/useWalletData';
 import { usePendingRefresh } from '@/state/pendingRefresh';
 import { networkDisplayName } from '@/wdk/chains';
+import { authenticateWithBiometrics, getBiometricStatus, verifyAppPin } from '@/security/appAccess';
 
 /**
  * Formats a crypto amount WITHOUT unnecessary trailing zeros — "1.000000"
@@ -70,11 +71,12 @@ export default function SendReview() {
   // the moment we navigate away, not dependent on a refetch happening to
   // trigger correctly on the next screen.
   const activeBalances = useWdkBalances();
-
   const [fee, setFee] = useState<{ fee: string; isSponsored: boolean } | null>(null);
   const [isQuoting, setIsQuoting] = useState(true);
   const [isSending, setIsSending] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
+  const [pinPromptOpen, setPinPromptOpen] = useState(false);
+  const [pinAttempt, setPinAttempt] = useState('');
 
   useEffect(() => {
     if (!asset || !recipient || !amount) return;
@@ -113,7 +115,18 @@ export default function SendReview() {
     ? new BigNumber(amount).plus(new BigNumber(fee.fee).shiftedBy(-asset.getDecimals())).toFixed(asset.getDecimals())
     : amount;
 
-  const onConfirm = async () => {
+  const authenticateSend = async (): Promise<boolean> => {
+    const biometric = await getBiometricStatus();
+    if (biometric.enabled) {
+      const ok = await authenticateWithBiometrics(`Send ${asset.getSymbol()} with ${biometric.label}`);
+      if (ok) return true;
+    }
+
+    setPinPromptOpen(true);
+    return false;
+  };
+
+  const broadcast = async () => {
     setSendError(null);
     setIsSending(true);
     const result = await sendAsset(account, { assetId: asset.getId(), to: recipient, amount });
@@ -125,6 +138,29 @@ export default function SendReview() {
     activeBalances.refetch();
     usePendingRefresh.getState().markPending();
     router.replace(`/send/success?txHash=${result.hash}&tokenId=${asset.getId()}&amount=${amount}`);
+  };
+
+  const onConfirm = async () => {
+    setSendError(null);
+    const authed = await authenticateSend();
+    if (!authed) return;
+    await broadcast();
+  };
+
+  const verifyPinAndSend = async () => {
+    setSendError(null);
+    if (pinAttempt.length !== 6) {
+      setSendError('Enter your 6-digit PIN');
+      return;
+    }
+    const valid = await verifyAppPin(pinAttempt);
+    if (!valid) {
+      setSendError('Incorrect PIN');
+      return;
+    }
+    setPinPromptOpen(false);
+    setPinAttempt('');
+    await broadcast();
   };
 
   return (
@@ -208,6 +244,15 @@ export default function SendReview() {
 
       {sendError ? (
         <Text variant="small" color="error" style={{ marginTop: 8 }}>{sendError}</Text>
+      ) : null}
+
+      {pinPromptOpen ? (
+        <Card style={{ marginTop: 14 }}>
+          <Text variant="tokenName">Confirm PIN</Text>
+          <Text variant="small" color="textSecondary">Required before signing and broadcasting this transaction.</Text>
+          <PinKeypad value={pinAttempt} onChange={setPinAttempt} />
+          <Button label="Confirm PIN and send" onPress={verifyPinAndSend} loading={isSending} disabled={!pinAttempt} />
+        </Card>
       ) : null}
 
       <View style={{ marginTop: 'auto' }}>

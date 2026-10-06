@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { AppState, AppStateStatus } from 'react-native';
 import { useWalletActions } from '@/wdk/hooks/useWalletActions';
 import { usePasswordSession } from '@/state/passwordSession';
+import { useSecuritySession } from '@/state/securitySession';
 import { useLockSuppression } from '@/state/lockSuppression';
 
 /**
@@ -31,6 +32,7 @@ import { useLockSuppression } from '@/state/lockSuppression';
 export function AutoLockOnBackground() {
   const { lock, activeWalletId } = useWalletActions();
   const clearPasswordSession = usePasswordSession((s) => s.clear);
+  const clearSecuritySession = useSecuritySession((s) => s.clear);
   const suppressed = useLockSuppression((s) => s.suppressed);
   const appState = useRef<AppStateStatus>(AppState.currentState);
 
@@ -69,11 +71,14 @@ export function AutoLockOnBackground() {
           .catch((e) => {
             console.warn('[AutoLockOnBackground] lock() failed:', e);
           })
-          .finally(clearPasswordSession);
+          .finally(() => {
+            clearPasswordSession();
+            clearSecuritySession();
+          });
       }
     });
     return () => sub.remove();
-  }, [lock, activeWalletId, clearPasswordSession, suppressed]);
+  }, [lock, activeWalletId, clearPasswordSession, clearSecuritySession, suppressed]);
 
   return null;
 }
