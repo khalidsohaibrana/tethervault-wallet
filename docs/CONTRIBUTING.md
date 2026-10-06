@@ -4,14 +4,14 @@
 
 Three-tier structure:
 
-- **`main`** — mirrors upstream `tetherto` reference repo. Don't commit
-  directly here.
-- **`develop`** — the long-lived integration branch. Feature branches
+- **`main`** — stable release branch. Don't commit directly here.
+- **`development`** — the long-lived integration branch. Feature branches
   target this.
-- **`feature/*`** — one branch per unit of work, branched off `develop`.
+- **`feature/*`** — one branch per unit of work, branched off
+  `development`.
 
-Flow: `feature/*` → PR into `develop` → (eventually) `develop` → `main` for
-upstream merge.
+Flow: `feature/*` -> PR into `development` -> `development` -> `main` when
+the app is ready for a stable release.
 
 ## Before opening a PR
 
@@ -32,21 +32,18 @@ exist specifically to avoid re-introducing bugs that were already found and
 fixed — deviating from them without understanding why is how those bugs
 come back.
 
-- **Never import WDK directly in a screen for data reads.** Go through
-  `@/data`'s hooks. If the data seam doesn't cover what you need yet,
-  extend it — don't bypass it.
+- **Avoid importing WDK directly in screens for data reads.** Use
+  `@/wdk/hooks/*` so network, asset, account, and indexer mapping stays in
+  the wallet integration layer.
 - **All text renders through `<Text>`, never raw React Native `<Text>`.**
   This is what applies responsive font scaling automatically. Same for
   `<Button>`, `<TextField>`, `<ScreenHeader>` — use the shared components,
   don't hand-roll pixel-based styling for things they already handle.
 - **New pixel values should be `moderateScale()`'d**, not hardcoded, unless
   there's a specific reason not to (rare — document it in a comment if so).
-- **Match the design prototype exactly** when building a new screen —
-  extract the actual markup/CSS rather than approximating from memory.
-  This project's screens were all built this way; a screen that "looks
-  close enough" but wasn't checked against the real prototype tends to
-  drift from the design system's actual values (spacing, colors, font
-  weights) in ways that are hard to spot without a side-by-side check.
+- **Build screens from the product goal first.** Reuse the starter's working
+  patterns, but make visible UI and copy fit TetherVault's one-day wallet
+  demo.
 - **Don't loosen a pinned dependency version without reading
   `docs/ENVIRONMENT.md` first.** Several exact pins exist because a caret
   range previously caused a real, hard-to-diagnose bug.

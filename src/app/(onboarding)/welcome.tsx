@@ -1,39 +1,22 @@
 import React from 'react';
-import { View, Image } from 'react-native';
+import { View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Screen, Text, Button } from '@/components';
-import { useResponsive } from '@/theme/responsive';
-
-
-// using a proper cropped asset (e.g. measure it in an image editor: w / h).
-const LOGO_ASPECT_RATIO = 2.79;
-
-// Logo never exceeds this width, even on tablets — prevents it from
-// growing to dominate large screens just because wp(55) is a big number there.
-const LOGO_MAX_WIDTH = 360;
+import { Screen, Text, Button, BrandMark } from '@/components';
 
 export default function Welcome() {
   const router = useRouter();
-  const { wp } = useResponsive();
-
-  const logoWidth = Math.min(wp(55), LOGO_MAX_WIDTH);
-  const logoHeight = logoWidth / LOGO_ASPECT_RATIO;
 
   return (
     <Screen>
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 56 }}>
-        <Image
-          source={require('@/../assets/images/wdk-logo.png')}
-          style={{ width: logoWidth, height: logoHeight}}
-          resizeMode="contain"
-        />
+        <BrandMark />
         <Text
           variant="body"
           color="textSecondary"
           center
-          style={{ maxWidth: '85%', marginTop: 40 }}
+          style={{ maxWidth: '85%', marginTop: 28 }}
         >
-          Self-custodial. Multi-chain. Your keys, your coins.
+          Create, secure, receive, and send USDt with a self-custodial wallet powered by Tether WDK.
         </Text>
       </View>
 

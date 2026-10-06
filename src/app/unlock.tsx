@@ -1,17 +1,13 @@
 import React, { useState } from 'react';
-import { View, Image } from 'react-native';
+import { View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Lock, LockIcon, LockKeyholeIcon } from 'lucide-react-native';
-import { Screen, Text, Button, TextField } from '@/components';
+import { LockKeyholeIcon } from 'lucide-react-native';
+import { Screen, Text, Button, TextField, BrandMark } from '@/components';
 import { useTheme } from '@/theme';
 import { useResponsive } from '@/theme/responsive';
 import { useWalletActions } from '@/wdk/hooks/useWalletActions';
 import { verifyAppPassword } from '@/wdk/passwordVault';
 import { usePasswordSession } from '@/state/passwordSession';
-
-// Must match welcome.tsx's LOGO_ASPECT_RATIO — same logo asset, smaller size.
-const LOGO_ASPECT_RATIO = 2.79;
-const LOGO_MAX_WIDTH = 360;
 
 /**
  * Unlock — matches the prototype's `unlock` screen: centered hero (logo,
@@ -21,15 +17,12 @@ const LOGO_MAX_WIDTH = 360;
 export default function Unlock() {
   const router = useRouter();
   const theme = useTheme();
-  const { wp, moderateScale } = useResponsive();
+  const { moderateScale } = useResponsive();
   const { unlock } = useWalletActions();
   const setSessionPassword = usePasswordSession((s) => s.setPassword);
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const logoWidth = Math.min(wp(40), LOGO_MAX_WIDTH);
-  const logoHeight = logoWidth / LOGO_ASPECT_RATIO;
 
   const doUnlock = async () => {
     setError(null);
@@ -57,11 +50,7 @@ export default function Unlock() {
   return (
     <Screen scroll>
       <View style={{ flex: 1, justifyContent: 'center', paddingVertical: 24 }}>
-        <Image
-          source={require('@/../assets/images/wdk-logo.png')}
-          style={{ width: logoWidth, height: logoHeight, alignSelf: 'center', marginBottom: 20 }}
-          resizeMode="contain"
-        />
+        <BrandMark compact />
         <View
           style={{
             width: moderateScale(72),
@@ -71,6 +60,7 @@ export default function Unlock() {
             alignItems: 'center',
             justifyContent: 'center',
             alignSelf: 'center',
+            marginTop: 24,
             marginBottom: 20,
           }}
         >
