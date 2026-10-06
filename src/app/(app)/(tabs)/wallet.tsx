@@ -120,18 +120,14 @@ export default function WalletHome() {
             <ChevronDown size={moderateScale(16)} color={theme.colors.textSecondary} />
           </Pressable>
 
-          {/* Visibly disabled — explicit product feedback: not-yet-built
-              actions should read as clearly inactive, not indistinguishable
-              from live controls. */}
           <Pressable
-            onPress={() => comingSoon('Scan')}
+            onPress={() => router.push('/send/scan')}
             style={{
               width: moderateScale(36),
               height: moderateScale(36),
               borderRadius: moderateScale(18),
               alignItems: 'center',
               justifyContent: 'center',
-              opacity: 0.6, // increased from 0.4 — was reading as too faint/dull
             }}
           >
             <ScanLine size={moderateScale(20)} color={theme.colors.textSecondary} />
@@ -169,6 +165,7 @@ export default function WalletHome() {
               isLast={i === tokenRows.length - 1}
               fetchFailed={b.fetchFailed}
               onRetryRow={() => balances.refetch()}
+              onPress={() => router.push(`/asset/${b.token.id}`)}
             />
           ))}
         </View>
@@ -229,6 +226,7 @@ function TokenRow({
   isLast,
   fetchFailed,
   onRetryRow,
+  onPress,
 }: {
   symbol: string;
   subtitle: string;
@@ -238,13 +236,15 @@ function TokenRow({
   isLast: boolean;
   fetchFailed?: boolean;
   onRetryRow?: () => void;
+  onPress: () => void;
 }) {
   const theme = useTheme();
   const { moderateScale } = useResponsive();
   const iconSize = moderateScale(38);
 
   return (
-    <View
+    <Pressable
+      onPress={onPress}
       style={{
         flexDirection: 'row',
         alignItems: 'center',
@@ -278,6 +278,6 @@ function TokenRow({
           <Text variant="small" color="textSecondary">{fiatValue}</Text>
         </View>
       )}
-    </View>
+    </Pressable>
   );
 }

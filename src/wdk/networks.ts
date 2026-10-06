@@ -151,10 +151,10 @@ export const NETWORKS = [
     network: 'bitcoin' as const,
     kind: 'bitcoin',
     provider: process.env.EXPO_PUBLIC_BTC_PROVIDER,
-    // Kept at 'bitcoin', exactly as before this file existed — see the
-    // note on `btcNetwork` in the interface above, and the caveat in the
-    // builder at the bottom of this file, before changing it.
-    btcNetwork: 'bitcoin',
+    // Testnet address derivation (tb1...) must match the default testnet
+    // Blockbook provider in .env.example; otherwise the app would show a
+    // mainnet receive address while querying testnet balances.
+    btcNetwork: 'testnet',
     displayNameBase: 'Bitcoin',
     networkLabel: process.env.EXPO_PUBLIC_BTC_NETWORK_LABEL,
     color: '#F7931A',
@@ -321,6 +321,14 @@ export function networkDisplayName(network: string): string {
   return def.networkLabel ? `${def.displayNameBase} (${def.networkLabel})` : def.displayNameBase;
 }
 
+export function networkModeLabel(network: string): 'Testnet' | 'Production' {
+  return BY_KEY[network]?.networkLabel ? 'Testnet' : 'Production';
+}
+
+export function isTestnetNetwork(network: string): boolean {
+  return networkModeLabel(network) === 'Testnet';
+}
+
 export function networkColorFor(network: string): string | undefined {
   return BY_KEY[network]?.color;
 }
@@ -401,13 +409,8 @@ function buildEvmConfig(
  * type error, and rightly so: they're different things that only coincide
  * today (see `btcNetwork` on NetworkDefinition above).
  *
- * ⚠️ Worth verifying if you touch Bitcoin config: `btcNetwork: 'bitcoin'`
- * means addresses are derived for MAINNET (bc1…), while the default
- * `EXPO_PUBLIC_BTC_PROVIDER` in `.env.example` points at a TESTNET
- * Blockbook instance. That combination is inherited unchanged from before
- * this file existed, so it isn't something introduced here — but it is a
- * mismatch worth confirming is intentional rather than assuming it is.
- * Testnet address derivation would be `btcNetwork: 'testnet'` (tb1…).
+ * Default Bitcoin config is testnet end-to-end: testnet Blockbook provider
+ * and testnet address derivation (tb1...). Repoint both together for mainnet.
  */
 function buildBitcoinConfig(
   btcNetwork: BtcWalletConfig['network'],

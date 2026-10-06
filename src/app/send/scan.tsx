@@ -37,18 +37,17 @@ export default function SendScan() {
   const theme = useTheme();
   const { moderateScale } = useResponsive();
   const { tokenId } = useLocalSearchParams<{ tokenId: string }>();
-  const asset = ASSETS.find((a) => a.getId() === tokenId);
+  const asset = ASSETS.find((a) => a.getId() === tokenId) ?? ASSETS.find((a) => a.getSymbol().startsWith('USDT')) ?? ASSETS[0];
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
   const [torch, setTorch] = useState(false);
 
   const subtitle = useMemo(() => {
-    if (!asset) return 'Scan a wallet address QR code.';
     return `Scan a ${networkDisplayName(asset.getNetwork())} address for ${asset.getSymbol()}.`;
   }, [asset]);
 
   const onScanned = ({ data }: BarcodeScanningResult) => {
-    if (scanned || !asset) return;
+    if (scanned) return;
     const address = parseScannedAddress(data);
     if (!address) {
       useToast.getState().show('No address found in QR code');
@@ -60,15 +59,6 @@ export default function SendScan() {
       params: { tokenId: asset.getId(), recipient: address },
     });
   };
-
-  if (!asset) {
-    return (
-      <Screen>
-        <ScreenHeader title="Scan QR" onBack={() => router.back()} />
-        <Text variant="body" color="error">Unknown asset.</Text>
-      </Screen>
-    );
-  }
 
   if (!permission) {
     return <Screen><ScreenHeader title="Scan QR" onBack={() => router.back()} /></Screen>;

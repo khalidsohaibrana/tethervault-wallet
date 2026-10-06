@@ -1,6 +1,6 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
-import { Wallet, List, ShieldCheck } from 'lucide-react-native';
+import { Compass, Wallet, List, ShieldCheck } from 'lucide-react-native';
 import { useTheme } from '@/theme';
 
 export default function TabsLayout() {
@@ -21,6 +21,10 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="activity"
         options={{ title: 'Activity', tabBarIcon: ({ color, size }) => <List color={color} size={size} /> }}
+      />
+      <Tabs.Screen
+        name="explore"
+        options={{ title: 'Explore', tabBarIcon: ({ color, size }) => <Compass color={color} size={size} /> }}
       />
       <Tabs.Screen
         name="security"

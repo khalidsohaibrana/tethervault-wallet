@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Share, View, Pressable } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
 import QRCode from 'react-native-qrcode-svg';
 import { ChevronDown, Check, Copy, Share2, TriangleAlert } from 'lucide-react-native';
@@ -52,7 +52,9 @@ export default function Receive() {
   const router = useRouter();
   const theme = useTheme();
   const { moderateScale } = useResponsive();
-  const [selectedId, setSelectedId] = useState(ASSETS[0].getId());
+  const { tokenId } = useLocalSearchParams<{ tokenId?: string }>();
+  const initialId = ASSETS.some((a) => a.getId() === tokenId) ? tokenId! : ASSETS[0].getId();
+  const [selectedId, setSelectedId] = useState(initialId);
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
 

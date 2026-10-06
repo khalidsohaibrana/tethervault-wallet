@@ -1,12 +1,13 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { View, Pressable, TextInput } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
-import { Search, ChevronDown, ChevronUp, EllipsisVertical, Plus, Hexagon, Triangle, Diamond, Circle } from 'lucide-react-native';
+import * as Clipboard from 'expo-clipboard';
+import { Search, ChevronDown, ChevronUp, Copy, Plus, Hexagon, Triangle, Diamond, Circle } from 'lucide-react-native';
 import { Screen, ScreenHeader, Text } from '@/components';
 import { useTheme } from '@/theme';
 import { useResponsive } from '@/theme/responsive';
 import { useAccounts } from '@/state/accounts';
-import { useWdkTotalUsdForAccount } from '@/wdk/hooks/useWalletData';
+import { useWdkAddressForAccountNetwork, useWdkTotalUsdForAccount } from '@/wdk/hooks/useWalletData';
 import { useToast } from '@/state/toast';
 import { usePendingRefresh, POLL_DELAYS_MS } from '@/state/pendingRefresh';
 
@@ -184,6 +185,7 @@ function AccountRow({
   const theme = useTheme();
   const { moderateScale } = useResponsive();
   const { total, refetch } = useWdkTotalUsdForAccount(index);
+  const primaryAddress = useWdkAddressForAccountNetwork(index, 'ethereum');
 
   // Same fix as Home — force a fresh fetch for THIS account's own balance
   // whenever the Accounts screen regains focus (e.g. right after a send),
@@ -205,6 +207,15 @@ function AccountRow({
     }, [index, sendPending]),
   );
   const glyph = ACCOUNT_GLYPHS[index % ACCOUNT_GLYPHS.length];
+  const shortAddress = primaryAddress.address
+    ? `${primaryAddress.address.slice(0, 6)}...${primaryAddress.address.slice(-4)}`
+    : 'Loading...';
+
+  const copyAddress = async () => {
+    if (!primaryAddress.address) return;
+    await Clipboard.setStringAsync(primaryAddress.address);
+    useToast.getState().show('Address copied');
+  };
 
   return (
     <Pressable
@@ -242,26 +253,19 @@ function AccountRow({
 
       <View style={{ flex: 1, minWidth: 0 }}>
         <Text variant="label" style={{ fontWeight: '500' }}>{name}</Text>
+        <Pressable
+          onPress={copyAddress}
+          style={{ flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 3 }}
+        >
+          <Text variant="small" color="textSecondary" mono numberOfLines={1}>
+            {shortAddress}
+          </Text>
+          <Copy size={moderateScale(12)} color={theme.colors.textSecondary} />
+        </Pressable>
       </View>
 
       <Text variant="label" style={{ fontWeight: '500' }}>{total}</Text>
 
-      <Pressable
-        onPress={() => useToast.getState().show('Account options coming soon')}
-        style={{
-          width: moderateScale(32),
-          height: moderateScale(32),
-          borderRadius: moderateScale(10),
-          backgroundColor: theme.colors.bgSecondary,
-          borderWidth: 1,
-          borderColor: theme.colors.border,
-          alignItems: 'center',
-          justifyContent: 'center',
-          opacity: 0.6,
-        }}
-      >
-        <EllipsisVertical size={moderateScale(16)} color={theme.colors.textSecondary} />
-      </Pressable>
     </Pressable>
   );
 }
