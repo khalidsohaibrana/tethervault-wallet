@@ -1,20 +1,17 @@
 import React, { createContext, useContext, useMemo, useState, useCallback } from 'react';
+import { useColorScheme } from 'react-native';
 import { lightPalette, darkPalette, type Palette } from './palettes';
 import { fonts, typography, spacing, radii, layout } from './tokens';
 
 /**
  * Theme system.
  *
- * - Default mode is 'light' (the v2 prototype). Change DEFAULT_MODE below, or
- *   call setMode()/toggleMode() at runtime, to use dark.
+ * - Follows the OS light/dark appearance by default.
+ * - Call setMode()/toggleMode() at runtime to explicitly override the OS mode.
  * - Both palettes share identical token names, so a theme is just a palette
  *   swap — no component touches raw colors.
- * - To follow the OS setting instead, wire `useColorScheme()` into the initial
- *   mode; left off by default so the app is deterministically v2 until changed.
  */
 export type ThemeMode = 'light' | 'dark';
-
-const DEFAULT_MODE: ThemeMode = 'light';
 
 const palettes: Record<ThemeMode, Palette> = {
   light: lightPalette,
@@ -40,13 +37,18 @@ const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 export function ThemeProvider({
   children,
-  initialMode = DEFAULT_MODE,
+  initialMode,
 }: {
   children: React.ReactNode;
   initialMode?: ThemeMode;
 }) {
-  const [mode, setMode] = useState<ThemeMode>(initialMode);
-  const toggleMode = useCallback(() => setMode((m) => (m === 'light' ? 'dark' : 'light')), []);
+  const systemMode = useColorScheme();
+  const [overrideMode, setMode] = useState<ThemeMode | null>(initialMode ?? null);
+  const mode: ThemeMode = overrideMode ?? (systemMode === 'dark' ? 'dark' : 'light');
+  const toggleMode = useCallback(() => setMode((m) => {
+    const currentMode = m ?? (systemMode === 'dark' ? 'dark' : 'light');
+    return currentMode === 'light' ? 'dark' : 'light';
+  }), [systemMode]);
 
   const value = useMemo<ThemeContextValue>(
     () => ({

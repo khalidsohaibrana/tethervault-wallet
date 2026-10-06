@@ -19,8 +19,7 @@
         ]
       },
       "infoPlist": {
-        "UIStatusBarStyle": "UIStatusBarStyleLightContent",
-        "UIViewControllerBasedStatusBarAppearance": false,
+        "NSCameraUsageDescription": "TetherVault uses the camera to scan wallet address QR codes.",
         "NSFaceIDUsageDescription": "This app uses Face ID to secure your wallet and authenticate transactions.",
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -34,11 +33,7 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.khalidsohaibrana.tethervault",
-      "statusBar": {
-        "style": "light",
-        "backgroundColor": "#000000"
-      }
+      "package": "com.khalidsohaibrana.tethervault"
     },
     "web": {
       "output": "static",
@@ -52,7 +47,7 @@
         "backgroundColor": "#26A17B"
       }
     },
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "plugins": [
       "expo-router",
       [
@@ -88,6 +83,12 @@
       "./modules/build/withCiBuildHardening.js",
       "./modules/build/withIosSimulatorBuildFixes.js",
       "expo-secure-store",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "TetherVault uses the camera to scan wallet address QR codes."
+        }
+      ],
       [
         "@react-native-google-signin/google-signin",
         { "iosUrlScheme": "com.googleusercontent.apps.518914426511-c46v1j9olhu5trra830bfo13cdj3ge4h" }

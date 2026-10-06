@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { View, Pressable, TextInput } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import BigNumber from 'bignumber.js';
@@ -16,7 +16,7 @@ type AmountMode = 'crypto' | 'fiat';
 
 /**
  * Send — amount. Matches the prototype's `send-amount` screen: a "To" card
- * (address entry + Scan, "coming soon" per Phase 1 scope), a large centered
+ * (address entry + QR scan), a large centered
  * amount input with a crypto/fiat toggle and live conversion, an "Available"
  * row with a working Max button, bottom-pinned Review.
  *
@@ -30,7 +30,7 @@ export default function SendAmount() {
   const router = useRouter();
   const theme = useTheme();
   const { moderateScale } = useResponsive();
-  const { tokenId } = useLocalSearchParams<{ tokenId: string }>();
+  const { tokenId, recipient: scannedRecipient } = useLocalSearchParams<{ tokenId: string; recipient?: string }>();
 
   const asset = ASSETS.find((a) => a.getId() === tokenId);
   const balances = useWdkBalances();
@@ -38,7 +38,7 @@ export default function SendAmount() {
   const { prices } = usePrices(asset ? [asset.getSymbol()] : []);
   const price = asset ? prices[asset.getSymbol()] : null;
 
-  const [recipient, setRecipient] = useState('');
+  const [recipient, setRecipient] = useState(typeof scannedRecipient === 'string' ? scannedRecipient : '');
   const [mode, setMode] = useState<AmountMode>('crypto');
   // The ONE source of truth, always in crypto units, at full precision.
   // Toggling modes NEVER writes to this — only typing does. This is the fix
@@ -54,6 +54,10 @@ export default function SendAmount() {
   // rounded DISPLAY of canonicalCrypto, but is never itself fed back into
   // canonicalCrypto except when the person is directly typing.
   const [inputText, setInputText] = useState('');
+
+  useEffect(() => {
+    if (typeof scannedRecipient === 'string') setRecipient(scannedRecipient);
+  }, [scannedRecipient]);
 
   const addressCheck = useMemo(() => {
     if (!recipient.trim() || !asset) return null;
@@ -166,16 +170,12 @@ export default function SendAmount() {
       <Card style={{ marginBottom: 14 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
           <Text variant="small" color="textSecondary">To</Text>
-          {/* Visibly disabled — consistent with every other "coming soon"
-              control in the app (Scan/Swap/Buy on Home). Was previously
-              full brand color/opacity, indistinguishable from a live
-              control. */}
           <Pressable
-            onPress={() => {useToast.getState().show('Scan coming soon')}}
-            style={{ flexDirection: 'row', alignItems: 'center', gap: 6, zIndex: 100, opacity: 0.6 }}
+            onPress={() => router.push(`/send/scan?tokenId=${asset.getId()}`)}
+            style={{ flexDirection: 'row', alignItems: 'center', gap: 6, zIndex: 100 }}
           >
-            <ScanLine size={moderateScale(14)} color={theme.colors.textSecondary} />
-            <Text variant="body" color="textSecondary" style={{ fontWeight: '500' }}>Scan</Text>
+            <ScanLine size={moderateScale(14)} color={theme.colors.brand} />
+            <Text variant="body" color="brand" style={{ fontWeight: '500' }}>Scan</Text>
           </Pressable>
         </View>
         <TextInput
