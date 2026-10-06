@@ -1,0 +1,103 @@
+{
+  "expo": {
+    "name": "TetherVault",
+    "slug": "tethervault-wallet",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "tethervault",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.khalidsohaibrana.tethervault",
+      "deploymentTarget": "16.0",
+      "entitlements": {
+        "com.apple.developer.icloud-services": [
+          "CloudKit"
+        ],
+        "com.apple.developer.icloud-container-identifiers": [
+          "iCloud.com.khalidsohaibrana.tethervault"
+        ]
+      },
+      "infoPlist": {
+        "UIStatusBarStyle": "UIStatusBarStyleLightContent",
+        "UIViewControllerBasedStatusBarAppearance": false,
+        "NSFaceIDUsageDescription": "This app uses Face ID to secure your wallet and authenticate transactions.",
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "backgroundImage": "./assets/images/android-icon-background.png",
+        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+      },
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false,
+      "package": "com.khalidsohaibrana.tethervault",
+      "statusBar": {
+        "style": "light",
+        "backgroundColor": "#000000"
+      }
+    },
+    "web": {
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "splash": {
+      "image": "./assets/images/splash-logo.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FF6501",
+      "dark": {
+        "backgroundColor": "#FF6501"
+      }
+    },
+    "userInterfaceStyle": "light",
+    "plugins": [
+      "expo-router",
+      [
+        "expo-navigation-bar",
+        {
+          "visibility": "hidden",
+          "behavior": "overlay-swipe"
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash-logo.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#FF6501"
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "minSdkVersion": 29,
+            "compileSdkVersion": 36,
+            "buildToolsVersion": "36.0.0",
+            "enableProguardInReleaseBuilds": true,
+            "enableShrinkResourcesInReleaseBuilds": true,
+            "extraProguardRules": "-dontwarn com.google.j2objc.annotations.ReflectionSupport\n-dontwarn com.google.j2objc.annotations.RetainedWith\n-dontwarn java.awt.Component"
+          }
+        }
+      ],
+      "./modules/cloud-backup/withModularHeaders.js",
+      "./modules/build/withCiBuildHardening.js",
+      "./modules/build/withIosSimulatorBuildFixes.js",
+      "expo-secure-store",
+      [
+        "@react-native-google-signin/google-signin",
+        { "iosUrlScheme": "com.googleusercontent.apps.518914426511-c46v1j9olhu5trra830bfo13cdj3ge4h" }
+      ],
+      [
+        "expo-secure-store",
+        {
+          "configureAndroidBackup": true
+        }
+      ]
+    ]
+  }
+}
